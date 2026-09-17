@@ -1,0 +1,50 @@
+name: Flask App CI Pipeline
+on:
+  push:
+    branches: ['main']
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        cache: "pip"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Run Pytest
+      run: |
+        pytest      
+    - name: Build Docker Image
+      run: |
+        docker build -t flask-action-app .
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            APP_DIR="flask-app-git-action"   
+            # 1. Clone if it doesn't exist
+            if [ ! -d "$APP_DIR" ]; then
+              echo "Repository not found. Cloning now..."
+              git clone https://github.com/KishanGendle/flask-app-git-action.git $APP_DIR
+            else
+              echo "Repository found. Pulling latest changes..."
+            fi
+            cd $APP_DIR
+            git pull origin main
+            # 2. Build Docker image
+            docker compose up -d --build
+            

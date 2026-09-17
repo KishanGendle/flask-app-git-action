@@ -1,0 +1,25 @@
+# Virtual Environments
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# macOS
+.DS_Store
+
+# IDEs and Editors
+.vscode/
+.idea/
+
+# Docker (Optional, usually ignored by .dockerignore, but good to keep out of Git if generated)
+*.log
